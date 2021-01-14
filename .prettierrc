@@ -1,0 +1,8 @@
+{
+  "overrides": [
+    {
+      "files": ".editorconfig",
+      "options": { "parser": "yaml" }
+    }
+  ]
+}

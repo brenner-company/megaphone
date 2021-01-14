@@ -1,0 +1,118 @@
+{
+  "plugins": [
+    "eslint-comments",
+    "prettier"
+  ],
+  "extends": [
+    "airbnb",
+    "plugin:eslint-comments/recommended",
+    "prettier",
+    "prettier/react"
+  ],
+  "env": {
+    "browser": true
+  },
+  "rules": {
+    "no-debugger": "warn",
+    "no-alert": "warn",
+    "no-await-in-loop": "warn",
+    "no-return-assign": ["error", "except-parens"],
+    "no-restricted-syntax": [
+      "error",
+      "ForInStatement",
+      "LabeledStatement",
+      "WithStatement"
+    ],
+    "no-unused-vars": [
+      "warn",
+      {
+        "ignoreRestSiblings": true,
+        "argsIgnorePattern": "res|next|^err"
+      }
+    ],
+    "prefer-const": [
+      "error",
+      {
+        "destructuring": "all"
+      }
+    ],
+    "arrow-body-style": ["error", "as-needed"],
+    "no-unused-expressions": [
+      "error",
+      {
+        "allowTaggedTemplates": true
+      }
+    ],
+    "no-param-reassign": [
+      "error",
+      {
+        "props": false
+      }
+    ],
+    "no-console": "warn",
+    "func-names": "off",
+    "space-before-function-paren": "off",
+    "comma-dangle": "off",
+    "max-len": "off",
+    "no-underscore-dangle": "off",
+    "consistent-return": "off",
+    "radix": "warn",
+    "no-shadow": [
+      "error",
+      {
+        "hoist": "all",
+        "allow": ["resolve", "reject", "done", "next", "err", "error"]
+      }
+    ],
+    "quotes": [
+      "error",
+      "single",
+      {
+        "avoidEscape": true,
+        "allowTemplateLiterals": true
+      }
+    ],
+    "no-use-before-define": "off",
+    // Too restrictive, writing ugly code to defend against a very unlikely scenario: https://eslint.org/docs/rules/no-prototype-builtins
+    "no-prototype-builtins": "off",
+    "import": "off",
+    "import/extensions": "off",
+    // https://basarat.gitbooks.io/typescript/docs/tips/defaultIsBad.html
+    "import/prefer-default-export": "off",
+    "import/no-default-export": "off",
+    "react/display-name": "warn",
+    "react/no-array-index-key": "warn",
+    "react/react-in-jsx-scope": "off",
+    "react/prefer-stateless-function": "warn",
+    "react/forbid-prop-types": "off",
+    "react/no-unescaped-entities": "warn",
+    "react/require-default-props": "off",
+    "react/jsx-filename-extension": [
+      "warn",
+      {
+        "extensions": [".js", ".jsx", ".ts", ".tsx", ".mdx"]
+      }
+    ],
+    // "react-hooks/rules-of-hooks": "error",
+    // "react-hooks/exhaustive-deps": "warn",
+    // Too restrictive: https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/destructuring-assignment.md
+    "react/destructuring-assignment": "off",
+    "react/prop-types": "warn",
+    "react/jsx-props-no-spreading": "warn",
+    "jsx-a11y/accessible-emoji": "off",
+    "jsx-a11y/href-no-hash": "off",
+    "jsx-a11y/anchor-is-valid": [
+      "warn",
+      {
+        "aspects": ["invalidHref"]
+      }
+    ],
+    "prettier/prettier": [
+      "error",
+      {
+        "trailingComma": "es5",
+        "singleQuote": true
+      }
+    ]
+  }
+}
