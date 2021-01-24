@@ -11,8 +11,9 @@ import {
   VisuallyHidden,
   HStack,
 } from '@chakra-ui/react';
-import Button from '@/components/Button';
-import { RiUser3Fill, RiMoonClearFill } from 'react-icons/ri';
+// import Button from '@/components/Button';
+import Login from '@/components/Login';
+import { RiMoonClearFill } from 'react-icons/ri';
 
 export default function Header() {
   const { colorMode, toggleColorMode } = useColorMode();
@@ -46,9 +47,10 @@ export default function Header() {
                   onChange={toggleColorMode}
                 />
               </FormControl>
-              <Button leftIcon={<RiUser3Fill />} colorScheme="primary">
+              {/* <Button leftIcon={<RiUser3Fill />} onClick={Login.onOpen}>
                 Sign up or log in
-              </Button>
+              </Button> */}
+              <Login />
             </HStack>
           </Flex>
         </Box>
