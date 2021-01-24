@@ -5,6 +5,7 @@ import theme from '@/styles/theme';
 // import '../styles/globals.css';
 
 function MyApp({ Component, pageProps }) {
+  // console.log(theme);
   return (
     <ChakraProvider theme={theme}>
       <ProvideAuth>

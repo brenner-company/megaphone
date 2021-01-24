@@ -1,4 +1,5 @@
 import Header from '@/components/Header';
+import Dashboard from '@/components/Dashboard';
 
 export default function Home() {
   return (
@@ -6,6 +7,9 @@ export default function Home() {
     // <Dashboard></Dashboard>
     // <Footer></Footer>
 
-    <Header />
+    <>
+      <Header />
+      <Dashboard />
+    </>
   );
 }
