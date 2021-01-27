@@ -1,6 +1,6 @@
 import { Container, Box, SimpleGrid, HStack } from '@chakra-ui/react';
 import Event from '@/components/Event';
-import Button from '@/components/Button';
+import { Button } from '@/components/Button';
 // import { FaCalendarPlus } from 'react-icons/fa';
 
 export default function Dashboard() {

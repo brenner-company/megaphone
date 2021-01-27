@@ -64,6 +64,14 @@ const theme = extendTheme({
             lg: '100%',
           },
         },
+        narrow: {
+          maxW: {
+            base: '100%',
+            sm: '45ch',
+            md: '45ch',
+            lg: '45ch',
+          },
+        },
       },
     },
   },

@@ -1,15 +1,10 @@
-import Header from '@/components/Header';
+import Page from '@/components/Page';
 import Dashboard from '@/components/Dashboard';
 
 export default function Home() {
   return (
-    // <Header></Header> - logged in/logged out
-    // <Dashboard></Dashboard>
-    // <Footer></Footer>
-
-    <>
-      <Header />
+    <Page name="Dashboard" path="/">
       <Dashboard />
-    </>
+    </Page>
   );
 }

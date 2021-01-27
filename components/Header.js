@@ -1,7 +1,8 @@
+import Link from 'next/link';
 import {
   useColorMode,
   Container,
-  Link,
+  Link as Hyperlink,
   Flex,
   Box,
   FormControl,
@@ -10,10 +11,10 @@ import {
   Icon,
   VisuallyHidden,
   HStack,
+  Heading,
 } from '@chakra-ui/react';
-// import Button from '@/components/Button';
-import Login from '@/components/Login';
-import { RiMoonClearFill } from 'react-icons/ri';
+import { Button } from '@/components/Button';
+import { RiUser3Fill, RiMoonClearFill } from 'react-icons/ri';
 
 export default function Header() {
   const { colorMode, toggleColorMode } = useColorMode();
@@ -24,8 +25,12 @@ export default function Header() {
       <Container variant="fluid">
         <Box py={4}>
           <Flex alignItems="center" justifyContent="space-between">
-            <Link mr={2} fontWeight="bold" fontSize="xl">
-              Megaphone
+            <Link href="/">
+              <Hyperlink mr={2}>
+                <Heading as="h1" fontSize="2xl">
+                  Megaphone
+                </Heading>
+              </Hyperlink>
             </Link>
 
             <HStack spacing={4}>
@@ -47,10 +52,9 @@ export default function Header() {
                   onChange={toggleColorMode}
                 />
               </FormControl>
-              {/* <Button leftIcon={<RiUser3Fill />} onClick={Login.onOpen}>
-                Sign up or log in
-              </Button> */}
-              <Login />
+              <Link href="/login">
+                <Button leftIcon={<RiUser3Fill />}>Sign up or log in</Button>
+              </Link>
             </HStack>
           </Flex>
         </Box>

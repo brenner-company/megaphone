@@ -1,12 +1,12 @@
-// import { omitThemingProps } from '@chakra-ui/system';
-import { Button as ChakraButton } from '@chakra-ui/react';
+// import { forwardRef } from '@chakra-ui/system';
+import { forwardRef, Button as ChakraButton } from '@chakra-ui/react';
 
-export default function Button(props) {
+export const Button = forwardRef((props, ref) => {
   const { colorScheme, children, ...rest } = props;
 
   return (
-    <ChakraButton {...rest} colorScheme="primary">
+    <ChakraButton ref={ref} {...rest} colorScheme="primary">
       {children}
     </ChakraButton>
   );
-}
+});
