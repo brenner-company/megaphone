@@ -50,6 +50,7 @@ export default function Header() {
                   id="email-alerts"
                   isChecked={isDarkMode}
                   onChange={toggleColorMode}
+                  colorScheme="primary"
                 />
               </FormControl>
               <Link href="/login">

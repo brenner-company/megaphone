@@ -45,6 +45,9 @@ const theme = extendTheme({
   colors: {
     primary: colors.primary,
   },
+  shadows: {
+    outline: '0 0 0 3px rgba(72, 187, 120, 0.5)',
+  },
   components: {
     Container: {
       baseStyle: {

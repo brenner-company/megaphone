@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   Container,
   Box,
@@ -12,7 +13,12 @@ import Page from '@/components/Page';
 import { Button } from '@/components/Button';
 
 export default function LoginPage() {
-  const { handleSubmit, errors, register, formState } = useForm();
+  const {
+    handleSubmit,
+    errors,
+    register,
+    formState: { isValid, isSubmitting },
+  } = useForm({ mode: 'onChange' });
   const onSubmit = (data) => console.log(data);
 
   return (
@@ -29,17 +35,24 @@ export default function LoginPage() {
               <Input
                 name="email"
                 id="email"
-                ref={register({ required: true })}
+                ref={register({
+                  required: 'email address required',
+                  pattern: {
+                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                    message: 'invalid email address',
+                  },
+                })}
                 placeholder="e.g. name@example.com"
               />
               <FormErrorMessage>
-                {errors.email && 'This is an error!'}
+                {errors.email && errors.email.message}
               </FormErrorMessage>
             </FormControl>
             <Button
-              isLoading={formState.isSubmitting}
+              isLoading={isSubmitting}
               type="submit"
               display="block"
+              isDisabled={!isValid}
             >
               Continue
             </Button>
