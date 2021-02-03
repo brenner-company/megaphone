@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useAuth } from '@/lib/auth';
 import {
   Container,
   Box,
@@ -6,6 +7,8 @@ import {
   FormControl,
   FormLabel,
   Input,
+  InputGroup,
+  InputRightElement,
   FormErrorMessage,
 } from '@chakra-ui/react';
 import { useForm } from 'react-hook-form';
@@ -13,13 +16,56 @@ import Page from '@/components/Page';
 import { Button } from '@/components/Button';
 
 export default function LoginPage() {
+  // const steps = ['start', ['credentials', 'sign up']];
+  const [currentStep, setCurrentStep] = useState('start');
+
+  const auth = useAuth();
   const {
     handleSubmit,
     errors,
     register,
     formState: { isValid, isSubmitting },
   } = useForm({ mode: 'onChange' });
-  const onSubmit = (data) => console.log(data);
+
+  const [showPasswordField, setShowPasswordField] = useState(false);
+
+  const [showPasswordValue, setShowPasswordValue] = useState(false);
+  const handlePasswordToggle = () => setShowPasswordValue(!showPasswordValue);
+
+  const onSubmit = async (data) => {
+    if (currentStep === 'start') {
+      // setCurrentStep(steps[steps.indexOf(currentStep) + 1]);
+      setIsDirtyEmail(false);
+      setSubmittedEmail();
+      const doesUserExist = await auth.doesUserExist(data.email);
+
+      if (doesUserExist) {
+        setCurrentStep('sign in');
+        setShowPasswordField(true);
+      } else {
+        setCurrentStep('sign up');
+        setShowPasswordField(true);
+      }
+    } else if (currentStep === 'sign up') {
+      console.log(data);
+    }
+  };
+
+  const [submittedEmail, setSubmittedEmail] = useState('');
+  const [isDirtyEmail, setIsDirtyEmail] = useState(false);
+
+  const handleEmailChange = (event) => {
+    if (
+      (currentStep === 'sign in' || currentStep === 'sign up') &&
+      submittedEmail !== event.target.value
+    ) {
+      setIsDirtyEmail(true);
+      setSubmittedEmail('');
+      setCurrentStep('start');
+    }
+  };
+
+  // fetchSignInMethodsForEmail
 
   return (
     <Page name="Login" path="/login">
@@ -43,16 +89,54 @@ export default function LoginPage() {
                   },
                 })}
                 placeholder="e.g. name@example.com"
+                onChange={handleEmailChange}
               />
               <FormErrorMessage>
                 {errors.email && errors.email.message}
               </FormErrorMessage>
             </FormControl>
+
+            {showPasswordField && !isDirtyEmail && (
+              <FormControl isRequired isInvalid={errors.password} mb={4}>
+                <FormLabel htmlFor="password">Password</FormLabel>
+                <InputGroup>
+                  <Input
+                    name="password"
+                    id="password"
+                    ref={register({
+                      required: 'password required',
+                    })}
+                    type={showPasswordValue ? 'text' : 'password'}
+                    pr="4.5rem"
+                    placeholder="Password"
+                  />
+                  <InputRightElement
+                    width="4.5rem"
+                    justifyContent="flex-end"
+                    paddingRight="6px"
+                  >
+                    <Button
+                      h="1.75rem"
+                      size="sm"
+                      onClick={handlePasswordToggle}
+                    >
+                      {showPasswordValue ? 'Hide' : 'Show'}
+                    </Button>
+                  </InputRightElement>
+                </InputGroup>
+
+                <FormErrorMessage>
+                  {errors.email && errors.email.message}
+                </FormErrorMessage>
+              </FormControl>
+            )}
+
             <Button
-              isLoading={isSubmitting}
               type="submit"
-              display="block"
+              isLoading={isSubmitting}
               isDisabled={!isValid}
+              display="block"
+              width="100%"
             >
               Continue
             </Button>
