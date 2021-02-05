@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useRouter } from 'next/router';
 import { useAuth } from '@/lib/auth';
 import {
   Container,
@@ -19,6 +20,8 @@ export default function LoginPage() {
   // const steps = ['start', ['credentials', 'sign up']];
   const [currentStep, setCurrentStep] = useState('start');
 
+  const router = useRouter();
+
   const auth = useAuth();
   const {
     handleSubmit,
@@ -32,34 +35,72 @@ export default function LoginPage() {
   const [showPasswordValue, setShowPasswordValue] = useState(false);
   const handlePasswordToggle = () => setShowPasswordValue(!showPasswordValue);
 
-  const onSubmit = async (data) => {
-    if (currentStep === 'start') {
-      // setCurrentStep(steps[steps.indexOf(currentStep) + 1]);
-      setIsDirtyEmail(false);
-      setSubmittedEmail();
-      const doesUserExist = await auth.doesUserExist(data.email);
+  const [showUsernameField, setShowUsernameField] = useState(false);
 
-      if (doesUserExist) {
-        setCurrentStep('sign in');
-        setShowPasswordField(true);
-      } else {
-        setCurrentStep('sign up');
-        setShowPasswordField(true);
+  const onSubmit = async (data) => {
+    switch (currentStep) {
+      case 'start': {
+        // setIsDirtyEmail(false);
+        setSubmittedEmail();
+
+        const { email } = data;
+        const doesUserExist = await auth.doesUserExist(email);
+
+        if (doesUserExist) {
+          setCurrentStep('sign in');
+          setShowPasswordField(true);
+        } else {
+          setCurrentStep('sign up');
+          setShowUsernameField(true);
+          setShowPasswordField(true);
+        }
+
+        break;
       }
-    } else if (currentStep === 'sign up') {
-      console.log(data);
+
+      case 'sign in': {
+        const { email, password } = data;
+        auth.signin(email, password).then(() => {
+          router.push('/');
+        });
+        break;
+      }
+
+      case 'sign up': {
+        const { email, password, username } = data;
+        auth.signup(email, password, username).then(() => {
+          console.log(`inside sign up: ${auth.user.displayName}`);
+          router.push('/');
+        });
+        break;
+      }
+
+      default:
+        break;
     }
   };
 
   const [submittedEmail, setSubmittedEmail] = useState('');
-  const [isDirtyEmail, setIsDirtyEmail] = useState(false);
+  // const [isDirtyEmail, setIsDirtyEmail] = useState(false);
 
   const handleEmailChange = (event) => {
     if (
       (currentStep === 'sign in' || currentStep === 'sign up') &&
       submittedEmail !== event.target.value
     ) {
-      setIsDirtyEmail(true);
+      switch (currentStep) {
+        case 'sign in': {
+          setShowPasswordField(false);
+          break;
+        }
+
+        default: {
+          setShowUsernameField(false);
+          setShowPasswordField(false);
+          break;
+        }
+      }
+      // setIsDirtyEmail(true);
       setSubmittedEmail('');
       setCurrentStep('start');
     }
@@ -82,10 +123,10 @@ export default function LoginPage() {
                 name="email"
                 id="email"
                 ref={register({
-                  required: 'email address required',
+                  required: 'Email address required',
                   pattern: {
                     value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                    message: 'invalid email address',
+                    message: 'Invalid email address',
                   },
                 })}
                 placeholder="e.g. name@example.com"
@@ -96,7 +137,26 @@ export default function LoginPage() {
               </FormErrorMessage>
             </FormControl>
 
-            {showPasswordField && !isDirtyEmail && (
+            {/* && !isDirtyEmail */}
+            {showUsernameField && (
+              <FormControl isRequired isInvalid={errors.username} mb={4}>
+                <FormLabel htmlFor="username">Username</FormLabel>
+                <Input
+                  name="username"
+                  id="username"
+                  ref={register({
+                    required: 'Username required',
+                  })}
+                  placeholder="Username"
+                />
+
+                <FormErrorMessage>
+                  {errors.username && errors.username.message}
+                </FormErrorMessage>
+              </FormControl>
+            )}
+
+            {showPasswordField && (
               <FormControl isRequired isInvalid={errors.password} mb={4}>
                 <FormLabel htmlFor="password">Password</FormLabel>
                 <InputGroup>
@@ -126,7 +186,7 @@ export default function LoginPage() {
                 </InputGroup>
 
                 <FormErrorMessage>
-                  {errors.email && errors.email.message}
+                  {errors.password && errors.password.message}
                 </FormErrorMessage>
               </FormControl>
             )}
