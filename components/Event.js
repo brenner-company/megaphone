@@ -1,4 +1,5 @@
-import { Box, Image, Badge } from '@chakra-ui/react';
+import Image from 'next/image';
+import { Box, Badge } from '@chakra-ui/react';
 
 export default function Event() {
   return (
@@ -6,6 +7,10 @@ export default function Event() {
       <Image
         src="/images/events/5b218ef7-5d98-11eb-b07d-02b7b76bf47f.jpg"
         alt="Bike race"
+        layout="responsive"
+        width={1280}
+        height={720}
+        priority
       />
 
       <Box p="6">
