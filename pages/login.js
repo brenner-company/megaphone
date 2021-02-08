@@ -13,7 +13,7 @@ import {
   FormErrorMessage,
 } from '@chakra-ui/react';
 import { useForm } from 'react-hook-form';
-import { DevTool } from '@hookform/devtools';
+// import { DevTool } from '@hookform/devtools';
 import Page from '@/components/Page';
 import { Button } from '@/components/Button';
 
@@ -29,8 +29,6 @@ export default function LoginPage() {
     errors,
     register,
     trigger,
-    reset,
-    control,
     formState: { isValid, isSubmitting },
   } = useForm({ mode: 'onChange' });
 
@@ -66,17 +64,13 @@ export default function LoginPage() {
       case 'sign in': {
         const { email, password } = data;
         setSubmittedPassword(password);
-        if (email === 'tiene@brenner.company') {
-          setInvalidCredentials(true);
-        } else {
-          try {
-            await auth.signin(email, password);
-            router.push('/');
-          } catch ({ code }) {
-            if (code === 'auth/wrong-password') {
-              // TODO: 'auth/too-many-requests' needs to be catched, maybe 'auth/invalid-email' too
-              setInvalidCredentials(true);
-            }
+        try {
+          await auth.signin(email, password);
+          router.push('/');
+        } catch ({ code }) {
+          if (code === 'auth/wrong-password') {
+            // TODO: 'auth/too-many-requests' needs to be catched, maybe 'auth/invalid-email' too
+            setInvalidCredentials(true);
           }
         }
         break;
@@ -98,19 +92,16 @@ export default function LoginPage() {
   const [submittedPassword, setSubmittedPassword] = useState('');
 
   const handleEmailChange = async (event) => {
-    console.log('emailchange');
     if (
       (currentStep === 'sign in' || currentStep === 'sign up') &&
       submittedEmail !== event.target.value
     ) {
       switch (currentStep) {
         case 'sign in': {
-          console.log('emailchange: step: sign in');
           if (invalidCredentials) {
-            console.log('emailchange: reset credentials validation');
             setInvalidCredentials(false);
           }
-          // reset('password');
+          await trigger('password'); // trigger inside useEffect for invalidCredentials seems to be executed after the password field dissapears, so we call an extra time here (untill I figure out what causes this issue)
           setShowPasswordField(false);
           setSubmittedPassword('');
           break;
@@ -126,33 +117,25 @@ export default function LoginPage() {
           break;
       }
 
-      console.log('emailchange: step: sign in - end');
       setSubmittedEmail('');
       setCurrentStep('start');
     }
   };
 
   const handlePasswordChange = (event) => {
-    console.log('passwordchange');
     if (
       currentStep === 'sign in' &&
       invalidCredentials &&
       submittedPassword !== event.target.value
     ) {
-      console.log('password change: step: sign in');
       setInvalidCredentials(false);
       setSubmittedPassword('');
     }
   };
 
   useEffect(() => {
-    // trigger('email');
     trigger('password');
   }, [invalidCredentials]);
-
-  useEffect(() => {
-    console.log(currentStep);
-  }, [currentStep]);
 
   return (
     <Page name="Login" path="/login">
@@ -183,7 +166,6 @@ export default function LoginPage() {
               </FormErrorMessage>
             </FormControl>
 
-            {/* && !isDirtyEmail */}
             {showUsernameField && (
               <FormControl isRequired isInvalid={errors.username} mb={4}>
                 <FormLabel htmlFor="username">Username</FormLabel>
@@ -210,9 +192,27 @@ export default function LoginPage() {
                     name="password"
                     id="password"
                     ref={register({
-                      required: 'password required',
+                      required: 'Password required',
                       validate: {
-                        validatedCredentials: () =>
+                        minLength: (value) => {
+                          if (currentStep === 'sign up') {
+                            return (
+                              value.length >= 8 ||
+                              'Password must have at least 8 characters'
+                            );
+                          }
+                        },
+                        validPattern: (value) => {
+                          if (currentStep === 'sign up') {
+                            return (
+                              /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[*.!@$%^&(){}[\]:;<>,.?/~_+\-=|])/.test(
+                                value
+                              ) ||
+                              'Invalid password pattern (at least one digit, one lowercase character, one uppercase character & one special character)'
+                            );
+                          }
+                        },
+                        validCredentials: () =>
                           !invalidCredentials ||
                           `Hmm, we couldn't find this email / password combination in our records. Try again.`,
                       },
@@ -253,7 +253,6 @@ export default function LoginPage() {
               Continue
             </Button>
           </form>
-          <DevTool control={control} />
         </Box>
       </Container>
     </Page>
