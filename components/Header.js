@@ -1,3 +1,4 @@
+import { useAuth } from '@/lib/auth';
 import Link from 'next/link';
 import {
   useColorMode,
@@ -12,13 +13,20 @@ import {
   VisuallyHidden,
   HStack,
   Heading,
+  Text,
 } from '@chakra-ui/react';
 import { Button } from '@/components/Button';
 import { RiUser3Fill, RiMoonClearFill } from 'react-icons/ri';
 
 export default function Header() {
+  const auth = useAuth();
+
   const { colorMode, toggleColorMode } = useColorMode();
   const isDarkMode = colorMode === 'dark';
+
+  const handleSignout = () => {
+    auth.signout();
+  };
 
   return (
     <Box borderBottomWidth="1px">
@@ -36,7 +44,7 @@ export default function Header() {
             <HStack spacing={4}>
               <FormControl display="flex" alignItems="stretch" flex="0" mr={4}>
                 <FormLabel
-                  htmlFor="email-alerts"
+                  htmlFor="dark-mode"
                   mb="0"
                   mr={2}
                   display="flex"
@@ -47,15 +55,22 @@ export default function Header() {
                 </FormLabel>
 
                 <Switch
-                  id="email-alerts"
+                  id="dark-mode"
                   isChecked={isDarkMode}
                   onChange={toggleColorMode}
                   colorScheme="primary"
                 />
               </FormControl>
-              <Link href="/login">
-                <Button leftIcon={<RiUser3Fill />}>Sign up or log in</Button>
-              </Link>
+              {auth.user ? (
+                <>
+                  <Text>{auth.user.displayName}</Text>
+                  <Button onClick={handleSignout}>Sign out</Button>
+                </>
+              ) : (
+                <Link href="/login">
+                  <Button leftIcon={<RiUser3Fill />}>Sign up or log in</Button>
+                </Link>
+              )}
             </HStack>
           </Flex>
         </Box>

@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import { useAuth } from '@/lib/auth';
 import {
   Container,
@@ -12,6 +13,7 @@ import {
   FormErrorMessage,
 } from '@chakra-ui/react';
 import { useForm } from 'react-hook-form';
+// import { DevTool } from '@hookform/devtools';
 import Page from '@/components/Page';
 import { Button } from '@/components/Button';
 
@@ -19,11 +21,14 @@ export default function LoginPage() {
   // const steps = ['start', ['credentials', 'sign up']];
   const [currentStep, setCurrentStep] = useState('start');
 
+  const router = useRouter();
+
   const auth = useAuth();
   const {
     handleSubmit,
     errors,
     register,
+    trigger,
     formState: { isValid, isSubmitting },
   } = useForm({ mode: 'onChange' });
 
@@ -32,40 +37,105 @@ export default function LoginPage() {
   const [showPasswordValue, setShowPasswordValue] = useState(false);
   const handlePasswordToggle = () => setShowPasswordValue(!showPasswordValue);
 
-  const onSubmit = async (data) => {
-    if (currentStep === 'start') {
-      // setCurrentStep(steps[steps.indexOf(currentStep) + 1]);
-      setIsDirtyEmail(false);
-      setSubmittedEmail();
-      const doesUserExist = await auth.doesUserExist(data.email);
+  const [showUsernameField, setShowUsernameField] = useState(false);
 
-      if (doesUserExist) {
-        setCurrentStep('sign in');
-        setShowPasswordField(true);
-      } else {
-        setCurrentStep('sign up');
-        setShowPasswordField(true);
+  const [invalidCredentials, setInvalidCredentials] = useState(false);
+
+  const onSubmit = async (data) => {
+    switch (currentStep) {
+      case 'start': {
+        const { email } = data;
+        const doesUserExist = await auth.doesUserExist(email);
+
+        setSubmittedEmail(email);
+
+        if (doesUserExist) {
+          setCurrentStep('sign in');
+          setShowPasswordField(true);
+        } else {
+          setCurrentStep('sign up');
+          setShowUsernameField(true);
+          setShowPasswordField(true);
+        }
+
+        break;
       }
-    } else if (currentStep === 'sign up') {
-      console.log(data);
+
+      case 'sign in': {
+        const { email, password } = data;
+        setSubmittedPassword(password);
+        try {
+          await auth.signin(email, password);
+          router.push('/');
+        } catch ({ code }) {
+          if (code === 'auth/wrong-password') {
+            // TODO: 'auth/too-many-requests' needs to be catched, maybe 'auth/invalid-email' too
+            setInvalidCredentials(true);
+          }
+        }
+        break;
+      }
+
+      case 'sign up': {
+        const { email, password, username } = data;
+        await auth.signup(email, password, username);
+        router.push('/');
+        break;
+      }
+
+      default:
+        break;
     }
   };
 
   const [submittedEmail, setSubmittedEmail] = useState('');
-  const [isDirtyEmail, setIsDirtyEmail] = useState(false);
+  const [submittedPassword, setSubmittedPassword] = useState('');
 
-  const handleEmailChange = (event) => {
+  const handleEmailChange = async (event) => {
     if (
       (currentStep === 'sign in' || currentStep === 'sign up') &&
       submittedEmail !== event.target.value
     ) {
-      setIsDirtyEmail(true);
+      switch (currentStep) {
+        case 'sign in': {
+          if (invalidCredentials) {
+            setInvalidCredentials(false);
+          }
+          await trigger('password'); // trigger inside useEffect for invalidCredentials seems to be executed after the password field dissapears, so we call an extra time here (untill I figure out what causes this issue)
+          setShowPasswordField(false);
+          setSubmittedPassword('');
+          break;
+        }
+
+        case 'sign up': {
+          setShowUsernameField(false);
+          setShowPasswordField(false);
+          break;
+        }
+
+        default:
+          break;
+      }
+
       setSubmittedEmail('');
       setCurrentStep('start');
     }
   };
 
-  // fetchSignInMethodsForEmail
+  const handlePasswordChange = (event) => {
+    if (
+      currentStep === 'sign in' &&
+      invalidCredentials &&
+      submittedPassword !== event.target.value
+    ) {
+      setInvalidCredentials(false);
+      setSubmittedPassword('');
+    }
+  };
+
+  useEffect(() => {
+    trigger('password');
+  }, [invalidCredentials]);
 
   return (
     <Page name="Login" path="/login">
@@ -82,10 +152,10 @@ export default function LoginPage() {
                 name="email"
                 id="email"
                 ref={register({
-                  required: 'email address required',
+                  required: 'Email address required',
                   pattern: {
                     value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                    message: 'invalid email address',
+                    message: 'Invalid email address',
                   },
                 })}
                 placeholder="e.g. name@example.com"
@@ -96,7 +166,25 @@ export default function LoginPage() {
               </FormErrorMessage>
             </FormControl>
 
-            {showPasswordField && !isDirtyEmail && (
+            {showUsernameField && (
+              <FormControl isRequired isInvalid={errors.username} mb={4}>
+                <FormLabel htmlFor="username">Username</FormLabel>
+                <Input
+                  name="username"
+                  id="username"
+                  ref={register({
+                    required: 'Username required',
+                  })}
+                  placeholder="Username"
+                />
+
+                <FormErrorMessage>
+                  {errors.username && errors.username.message}
+                </FormErrorMessage>
+              </FormControl>
+            )}
+
+            {showPasswordField && (
               <FormControl isRequired isInvalid={errors.password} mb={4}>
                 <FormLabel htmlFor="password">Password</FormLabel>
                 <InputGroup>
@@ -104,11 +192,35 @@ export default function LoginPage() {
                     name="password"
                     id="password"
                     ref={register({
-                      required: 'password required',
+                      required: 'Password required',
+                      validate: {
+                        minLength: (value) => {
+                          if (currentStep === 'sign up') {
+                            return (
+                              value.length >= 8 ||
+                              'Password must have at least 8 characters'
+                            );
+                          }
+                        },
+                        validPattern: (value) => {
+                          if (currentStep === 'sign up') {
+                            return (
+                              /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[*.!@$%^&(){}[\]:;<>,.?/~_+\-=|])/.test(
+                                value
+                              ) ||
+                              'Invalid password pattern (at least one digit, one lowercase character, one uppercase character & one special character)'
+                            );
+                          }
+                        },
+                        validCredentials: () =>
+                          !invalidCredentials ||
+                          `Hmm, we couldn't find this email / password combination in our records. Try again.`,
+                      },
                     })}
                     type={showPasswordValue ? 'text' : 'password'}
                     pr="4.5rem"
                     placeholder="Password"
+                    onChange={handlePasswordChange}
                   />
                   <InputRightElement
                     width="4.5rem"
@@ -126,7 +238,7 @@ export default function LoginPage() {
                 </InputGroup>
 
                 <FormErrorMessage>
-                  {errors.email && errors.email.message}
+                  {errors.password && errors.password.message}
                 </FormErrorMessage>
               </FormControl>
             )}
