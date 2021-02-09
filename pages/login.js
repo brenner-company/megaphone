@@ -140,7 +140,7 @@ export default function LoginPage() {
   return (
     <Page name="Login" path="/login">
       <Container variant="narrow">
-        <Box py={12}>
+        <Box py={[6, 12]}>
           <Heading as="h2" fontSize="lg" mb={4}>
             Sign up or log in
           </Heading>
