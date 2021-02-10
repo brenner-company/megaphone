@@ -36,7 +36,7 @@ export default function AccountPage() {
   const onSubmit = (data) => {};
 
   return (
-    <Page name="Account" path="/account">
+    <Page name="Account" path="/account" requiresAuth>
       <Container variant="narrow">
         <Box py={[6, 12]}>
           <Heading as="h2" fontSize="lg" mb={4}>
@@ -61,13 +61,19 @@ export default function AccountPage() {
                   type={showPasswordValue ? 'text' : 'password'}
                   pr="4.5rem"
                   placeholder="Password"
+                  isDisabled
                 />
                 <InputRightElement
                   width="4.5rem"
                   justifyContent="flex-end"
                   paddingRight="6px"
                 >
-                  <Button h="1.75rem" size="sm" onClick={handlePasswordToggle}>
+                  <Button
+                    h="1.75rem"
+                    size="sm"
+                    onClick={handlePasswordToggle}
+                    isDisabled
+                  >
                     {showPasswordValue ? 'Hide' : 'Show'}
                   </Button>
                 </InputRightElement>

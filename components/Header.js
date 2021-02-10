@@ -1,3 +1,4 @@
+import { useRouter } from 'next/router';
 import { useAuth } from '@/lib/auth';
 import Link from 'next/link';
 import {
@@ -30,6 +31,7 @@ import {
 } from 'react-icons/ri';
 
 export default function Header() {
+  const router = useRouter();
   const auth = useAuth();
 
   const { colorMode, toggleColorMode } = useColorMode();
@@ -54,8 +56,10 @@ export default function Header() {
     },
   };
 
-  const handleSignout = () => {
-    auth.signout();
+  const handleSignout = async () => {
+    // setIsLoggingOut(true);
+    await auth.signout();
+    router.push('/');
   };
 
   return (
